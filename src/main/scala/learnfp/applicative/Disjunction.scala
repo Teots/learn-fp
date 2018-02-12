@@ -11,7 +11,7 @@ object DisjunctionInstance {
         case (RightDisjunction(daValue), RightDisjunction(dfxValue)) => RightDisjunction(dfxValue(daValue))
         case (LeftDisjunction(daFailure), RightDisjunction(_)) => LeftDisjunction(daFailure)
         case (RightDisjunction(_), LeftDisjunction(dfxFailure)) => LeftDisjunction(dfxFailure)
-        case (LeftDisjunction(daFailure), LeftDisjunction(_)) => LeftDisjunction(daFailure)
+        case (LeftDisjunction(_), LeftDisjunction(dfxFailure)) => LeftDisjunction(dfxFailure)
       }
     }
   }

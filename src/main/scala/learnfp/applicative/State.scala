@@ -8,10 +8,10 @@ object StateInstance {
     override def pure[A](a: A): State[S, A] = State(state => (state, a))
     override def <*>[A, R](fx: State[S, A => R])(a: State[S, A]): State[S, R] = {
       State { state =>
-        val (stateA, valueA) = a.run(state)
-        val (stateFx, valueFx) = fx.run(stateA)
+        val (stateFx, valueFx) = fx.run(state)
+        val (stateA, valueA) = a.run(stateFx)
 
-        (stateFx, valueFx(valueA))
+        (stateA, valueFx(valueA))
       }
     }
   }
