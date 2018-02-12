@@ -26,7 +26,6 @@ object TraversableInstances {
   implicit val tuple3TraversableInstance = new Traversable[STuple3] {
     override def traverse[A, B, F[_]](xs: (F[A], F[A], F[A]))(fx: A => B)(implicit foldable: Foldable[STuple3],
                                                                           functor: Functor[F], applicative: Applicative[F]): F[(B, B, B)] = {
-
       val aV: F[B] = functor.fmap(xs._3)(a => fx(a))
       val aF: F[B => (B, B)] = functor.fmap(xs._2)((a: A) => (b: B) => (fx(a), b))
       val bV: F[(B, B)] = applicative.<*>(aF)(aV)
@@ -41,13 +40,11 @@ object TraversableInstances {
     override def traverse[A, B, F[_]](xs: List[F[A]])(fx: A => B)(implicit foldable: Foldable[List],
                                                                   functor: Functor[F], applicative: Applicative[F]): F[List[B]] = {
       foldable.foldr(xs)(applicative.pure(List.empty[B])) { (elem, acc) =>
-        val aV: F[B] = functor.fmap(elem)(fx)
-        val af: (B => List[B] => List[B]) = (b: B) => (bs: List[B]) => b :: bs
-        val bf: F[List[B] => List[B]] = functor.fmap(aV)(af)
+        val mappedElem: F[B] = functor.fmap(elem)(fx)
+        val functionWithMappedElemBuilder: (B => List[B] => List[B]) = (b: B) => (lb: List[B]) => b :: lb
+        val functionWithMappedElem: F[(List[B] => List[B])] = functor.fmap(mappedElem)(functionWithMappedElemBuilder)
 
-        val res: F[List[B]] = applicative.<*>(bf)(acc)
-
-        res
+        applicative.<*>(functionWithMappedElem)(acc)
       }
     }
   }
