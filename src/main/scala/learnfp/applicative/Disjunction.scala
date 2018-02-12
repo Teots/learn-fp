@@ -5,8 +5,15 @@ import learnfp.functor.DisjunctionInstance._
 
 object DisjunctionInstance {
   implicit def disjunctionInstance[L] = new Applicative[({type E[X] = Disjunction[L, X]})#E]() {
-    override def pure[A](a: A): Disjunction[L, A] = ???
-    override def <*>[A, R](dfx: Disjunction[L, A => R])(da: Disjunction[L, A]): Disjunction[L, R] = ???
+    override def pure[A](a: A): Disjunction[L, A] = RightDisjunction(a)
+    override def <*>[A, R](dfx: Disjunction[L, A => R])(da: Disjunction[L, A]): Disjunction[L, R] = {
+      (da, dfx) match {
+        case (RightDisjunction(daValue), RightDisjunction(dfxValue)) => RightDisjunction(dfxValue(daValue))
+        case (LeftDisjunction(daFailure), RightDisjunction(_)) => LeftDisjunction(daFailure)
+        case (RightDisjunction(_), LeftDisjunction(dfxFailure)) => LeftDisjunction(dfxFailure)
+        case (LeftDisjunction(daFailure), LeftDisjunction(_)) => LeftDisjunction(daFailure)
+      }
+    }
   }
 
   implicit def disjunctionToApplicativeOps[L, A, R](fx:Disjunction[L, A => R])(
